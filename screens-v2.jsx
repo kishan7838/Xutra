@@ -30,34 +30,32 @@ function BrandHeader({ title, T, trailing, showWordmark = false }) {
   );
 }
 
-// Xusta brand mark — renders logo.png tinted to exactly T.brand color.
-// SVG filter: feColorMatrix converts white bg → transparent, dark lines → opaque,
-// then feFlood + feComposite fills the opaque areas with the brand color.
+// Xusta brand mark — logo.png tinted to T.brand using CSS blend trick:
+//   1. invert(1)        → dark lines become white, white bg becomes black
+//   2. mix-blend-mode: multiply  over brand-color bg
+//      white(1) × brand = brand  → lines show in brand color  ✓
+//      black(0) × brand = black  → bg stays dark, blends with app  ✓
 function XustaMarkV2({ color = '#1FE583', size = 30 }) {
   return (
-    <svg width={size} height={size} style={{ display: 'block', flexShrink: 0 }}
-         overflow="visible">
-      <defs>
-        <filter id="xusta-mark-filter" colorInterpolationFilters="sRGB"
-                x="0" y="0" width="1" height="1">
-          {/* Invert luminance to alpha: white bg → alpha=0, dark lines → alpha=1 */}
-          <feColorMatrix type="matrix"
-            values="0 0 0 0 0
-                    0 0 0 0 0
-                    0 0 0 0 0
-                   -1 -1 -1 3 0"
-            result="alphaFromLuma"/>
-          {/* Flood fill with brand color */}
-          <feFlood floodColor={color} result="brandFill"/>
-          {/* Clip brand color to the logo lines only */}
-          <feComposite in="brandFill" in2="alphaFromLuma" operator="in"/>
-        </filter>
-      </defs>
-      <image href="uploads/logo.png"
-             width={size} height={size}
-             preserveAspectRatio="xMidYMid meet"
-             filter="url(#xusta-mark-filter)"/>
-    </svg>
+    <div style={{
+      width: size, height: size, flexShrink: 0,
+      background: color,        // brand color base for multiply
+      isolation: 'isolate',     // blend stays inside this container
+      display: 'inline-block',
+      lineHeight: 0,
+    }}>
+      <img
+        src="uploads/logo.png"
+        width={size} height={size}
+        style={{
+          display: 'block',
+          filter: 'invert(1)',          // white lines, black bg
+          mixBlendMode: 'multiply',     // white×brand=brand, black×brand=black
+          objectFit: 'contain',
+        }}
+        alt="Xusta"
+      />
+    </div>
   );
 }
 
