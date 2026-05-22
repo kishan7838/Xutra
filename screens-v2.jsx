@@ -627,10 +627,11 @@ function OrderCardV2({ o, T }) {
   const progressColor = isComplete ? T.up : progress > 0 ? T.up : T.text3;
 
   const sideStyle = {
-    fontSize: 11, fontWeight: 700, letterSpacing: '0.06em',
-    padding: '3px 9px', borderRadius: 4,
+    fontSize: 12, fontWeight: 800, letterSpacing: '0.07em',
+    padding: '4px 11px', borderRadius: 5,
     background: isBuy ? T.upDim : T.downDim,
     color: isBuy ? T.up : T.down,
+    lineHeight: 1.3,
   };
 
   const statusStyle = {
@@ -653,8 +654,8 @@ function OrderCardV2({ o, T }) {
         display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8,
       }}>
         <span style={sideStyle}>{o.side}</span>
-        <span className="mono" style={{ fontSize: 13, color: T.text2 }}>
-          {o.filled}<span style={{ opacity: 0.4, margin: '0 4px' }}>/</span>{o.qty}
+        <span className="mono" style={{ fontSize: 13, color: T.text2, letterSpacing: '0.01em' }}>
+          {o.filled} <span style={{ opacity: 0.35 }}>/</span> {o.qty}
         </span>
         <div style={{ flex: 1 }} />
         <div style={{
@@ -674,12 +675,12 @@ function OrderCardV2({ o, T }) {
         display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
       }}>
         <span style={{
-          color: T.text, fontSize: 24, fontWeight: 700, letterSpacing: '-0.01em',
-        }}>{o.instrument.split(' ')[0]}</span>
-        <span style={{ display: 'flex', alignItems: 'baseline', gap: 6, color: T.text3, fontSize: 12 }}>
+          color: T.text, fontSize: 26, fontWeight: 700, letterSpacing: '-0.02em',
+        }}>{o.instrument.split(' ')[0].toUpperCase()}</span>
+        <span style={{ display: 'flex', alignItems: 'baseline', gap: 5, color: T.text3, fontSize: 12 }}>
           {o.status === 'GTT' ? 'Trigger' : 'Avg.'}
           <span className="mono" style={{
-            color: T.text, fontSize: 18, fontWeight: 700, letterSpacing: '-0.01em',
+            color: T.text, fontSize: 20, fontWeight: 700, letterSpacing: '-0.02em',
           }}>{fmtINR(o.price)}</span>
         </span>
       </div>
@@ -687,10 +688,10 @@ function OrderCardV2({ o, T }) {
       {/* bottom meta */}
       <div style={{
         display: 'flex', justifyContent: 'space-between', marginTop: 6,
-        fontSize: 11, color: T.text3, letterSpacing: '0.05em',
+        fontSize: 11, color: T.text3, letterSpacing: '0.06em', fontWeight: 500,
       }}>
-        <span>{o.exch}</span>
-        <span>{o.product} {o.orderType}</span>
+        <span>{o.exch ? o.exch.toUpperCase() : ''}</span>
+        <span>{(o.product || '').toUpperCase()} {(o.orderType || '').toUpperCase()}</span>
       </div>
 
       {/* progress bar */}
