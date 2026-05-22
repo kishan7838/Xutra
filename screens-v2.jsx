@@ -30,29 +30,13 @@ function BrandHeader({ title, T, trailing, showWordmark = false }) {
   );
 }
 
-// Xusta brand mark — arrow-cursor pointing NE with integrated X crossing.
-// Faithfully traced from the uploaded logo reference.
+// Clean classic X — two crossing strokes, rounded ends.
 function XustaMarkV2({ color = '#1FE583', size = 30 }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none"
-         style={{ display: 'block', flexShrink: 0 }}>
-      {/* ── Arrow shaft: long diagonal from SW to NE ── */}
-      <path d="M 18 88 L 83 16"
-            stroke={color} strokeWidth="4.5" strokeLinecap="round"/>
-      {/* ── Arrowhead top edge: horizontal sweep to the tip ── */}
-      <path d="M 22 18 L 83 16"
-            stroke={color} strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round"/>
-      {/* ── Arrowhead right edge: going down from tip ── */}
-      <path d="M 83 16 L 81 55"
-            stroke={color} strokeWidth="4.5" strokeLinecap="round"/>
-      {/* ── Inner arrowhead diagonal: tip back toward X center ── */}
-      <path d="M 83 16 L 54 45"
-            stroke={color} strokeWidth="4" strokeLinecap="round"/>
-      {/* ── X crossing: two diagonal strokes ── */}
-      <path d="M 36 38 L 66 68"
-            stroke={color} strokeWidth="4.5" strokeLinecap="round"/>
-      <path d="M 66 38 L 36 68"
-            stroke={color} strokeWidth="4.5" strokeLinecap="round"/>
+    <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: 'block', flexShrink: 0 }}>
+      <path d="M 4 4 L 20 20 M 20 4 L 4 20"
+            stroke={color} strokeWidth="3" fill="none"
+            strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

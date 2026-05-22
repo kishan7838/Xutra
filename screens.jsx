@@ -781,27 +781,12 @@ function RowKV({ label, value, sub, subColor, strong, T }) {
 }
 
 function XustaMark({ T, size = 22 }) {
-  // Arrow-cursor + X mark — Xusta brand logo (traced from reference).
+  // Clean classic X — two crossing strokes, rounded ends.
   return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none"
-         style={{ display: 'block', flexShrink: 0 }}>
-      {/* Shaft */}
-      <path d="M 18 88 L 83 16"
-            stroke={T.brand} strokeWidth="4.5" strokeLinecap="round"/>
-      {/* Arrowhead top edge */}
-      <path d="M 22 18 L 83 16"
-            stroke={T.brand} strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round"/>
-      {/* Arrowhead right edge */}
-      <path d="M 83 16 L 81 55"
-            stroke={T.brand} strokeWidth="4.5" strokeLinecap="round"/>
-      {/* Inner arrowhead diagonal */}
-      <path d="M 83 16 L 54 45"
-            stroke={T.brand} strokeWidth="4" strokeLinecap="round"/>
-      {/* X crossing */}
-      <path d="M 36 38 L 66 68"
-            stroke={T.brand} strokeWidth="4.5" strokeLinecap="round"/>
-      <path d="M 66 38 L 36 68"
-            stroke={T.brand} strokeWidth="4.5" strokeLinecap="round"/>
+    <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: 'block', flexShrink: 0 }}>
+      <path d="M 4 4 L 20 20 M 20 4 L 4 20"
+            stroke={T.brand} strokeWidth="3" fill="none"
+            strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
