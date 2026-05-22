@@ -161,6 +161,89 @@ const BRAND_OPTIONS = [
   '#F5EFE6', // warm cream (default)
 ];
 
+// ── Draggable dark/light toggle button ────────────────────────────────────
+function DarkToggleBtn({ dark, T, onToggle }) {
+  const [pos, setPos] = useStateA({ x: null, y: null }); // null = use default
+  const drag = useRefA(null); // { startX, startY, initX, initY, moved }
+
+  const DEVICE_W = 390;
+  const DEVICE_H = 844;
+  const BTN = 31; // button hit-area diameter
+
+  const defaultX = DEVICE_W - 14 - BTN;
+  const defaultY = 58;
+
+  const cx = pos.x ?? defaultX;
+  const cy = pos.y ?? defaultY;
+
+  const onPointerDown = (e) => {
+    e.preventDefault();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    drag.current = { startX: e.clientX, startY: e.clientY, initX: cx, initY: cy, moved: false };
+  };
+
+  const onPointerMove = (e) => {
+    if (!drag.current) return;
+    const dx = e.clientX - drag.current.startX;
+    const dy = e.clientY - drag.current.startY;
+    if (!drag.current.moved && Math.hypot(dx, dy) > 4) drag.current.moved = true;
+    if (!drag.current.moved) return;
+    const nx = Math.min(Math.max(drag.current.initX + dx, 6), DEVICE_W - BTN - 6);
+    const ny = Math.min(Math.max(drag.current.initY + dy, 44), DEVICE_H - BTN - 80);
+    setPos({ x: nx, y: ny });
+  };
+
+  const onPointerUp = (e) => {
+    if (!drag.current) return;
+    const wasMoved = drag.current.moved;
+    drag.current = null;
+    if (!wasMoved) onToggle();
+  };
+
+  return (
+    <div
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      style={{
+        position: 'absolute',
+        left: cx, top: cy,
+        width: BTN, height: BTN,
+        zIndex: 60,
+        borderRadius: '50%',
+        background: dark
+          ? 'rgba(255,255,255,0.10)'
+          : 'rgba(0,0,0,0.07)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        cursor: 'grab',
+        color: T.text2,
+        userSelect: 'none',
+        touchAction: 'none',
+        boxShadow: dark
+          ? '0 1px 6px rgba(0,0,0,0.35)'
+          : '0 1px 6px rgba(0,0,0,0.14)',
+        transition: 'background 0.2s',
+      }}
+      title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+    >
+      {dark ? (
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="4.5" stroke="currentColor" strokeWidth="1.6"/>
+          <path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.93 4.93l1.77 1.77M17.3 17.3l1.77 1.77M4.93 19.07l1.77-1.77M17.3 6.7l1.77-1.77"
+                stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+        </svg>
+      ) : (
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+          <path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"
+                stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      )}
+    </div>
+  );
+}
+
 // ── App ────────────────────────────────────────────────────────────────────
 function App() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
@@ -340,6 +423,9 @@ function App() {
             display: 'flex', flexDirection: 'column',
             overflow: 'hidden',
           }}>
+              {/* ── Dark / Light mode toggle (draggable) ── */}
+            <DarkToggleBtn dark={t.dark} T={T} onToggle={() => setTweak('dark', !t.dark)} />
+
             {screen === 'home' && (
               <HomeScreen
                 T={T}

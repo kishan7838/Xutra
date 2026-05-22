@@ -781,28 +781,22 @@ function RowKV({ label, value, sub, subColor, strong, T }) {
 }
 
 function XustaMark({ T, size = 22 }) {
-  // Same SVG filter technique: white bg → transparent, dark lines → T.brand color
   return (
-    <svg width={size} height={size} style={{ display: 'block', flexShrink: 0 }}
-         overflow="visible">
-      <defs>
-        <filter id="xusta-mark-filter-b" colorInterpolationFilters="sRGB"
-                x="0" y="0" width="1" height="1">
-          <feColorMatrix type="matrix"
-            values="0 0 0 0 0
-                    0 0 0 0 0
-                    0 0 0 0 0
-                   -1 -1 -1 3 0"
-            result="alphaFromLuma"/>
-          <feFlood floodColor={T.brand} result="brandFill"/>
-          <feComposite in="brandFill" in2="alphaFromLuma" operator="in"/>
-        </filter>
-      </defs>
-      <image href="uploads/logo.png"
-             width={size} height={size}
-             preserveAspectRatio="xMidYMid meet"
-             filter="url(#xusta-mark-filter-b)"/>
-    </svg>
+    <div style={{
+      width: size, height: size, flexShrink: 0,
+      display: 'inline-block',
+      background: T.brand,
+      maskImage: 'url(uploads/logo.png)',
+      maskSize: 'contain',
+      maskRepeat: 'no-repeat',
+      maskPosition: 'center',
+      maskMode: 'luminance',
+      WebkitMaskImage: 'url(uploads/logo.png)',
+      WebkitMaskSize: 'contain',
+      WebkitMaskRepeat: 'no-repeat',
+      WebkitMaskPosition: 'center',
+      WebkitMaskMode: 'luminance',
+    }} />
   );
 }
 

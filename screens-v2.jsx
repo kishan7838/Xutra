@@ -9,18 +9,19 @@ function BrandHeader({ title, T, trailing, showWordmark = false }) {
   return (
     <div style={{
       padding: '60px 16px 18px',
-      display: 'flex', alignItems: 'center', gap: 10,
+      display: 'flex', alignItems: 'center', gap: 8,
     }}>
-      <XustaMarkV2 color={T.brand} size={30} />
-      <div style={{ flex: 1, display: 'flex', alignItems: 'baseline', gap: 6 }}>
+      <XustaMarkV2 color={T.brand} size={36} dark={T.dark} />
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
         <span style={{
-          color: T.brand, fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em',
+          color: T.brand, fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em',
           fontStyle: 'italic',
           fontFamily: "'Plus Jakarta Sans', -apple-system, sans-serif",
+          lineHeight: 1,
         }}>{title}</span>
         {showWordmark && (
           <span className="script" style={{
-            color: T.brand, fontSize: 22, marginLeft: 4,
+            color: T.brand, fontSize: 20, marginLeft: 4,
             opacity: 0.9, lineHeight: 1,
           }}>Xusta</span>
         )}
@@ -30,44 +31,33 @@ function BrandHeader({ title, T, trailing, showWordmark = false }) {
   );
 }
 
-// Xusta brand mark — renders logo.png tinted to exactly T.brand color.
-// SVG filter: feColorMatrix converts white bg → transparent, dark lines → opaque,
-// then feFlood + feComposite fills the opaque areas with the brand color.
-function XustaMarkV2({ color = '#1FE583', size = 30 }) {
+function XustaMarkV2({ color, size = 22, dark = true }) {
   return (
-    <svg width={size} height={size} style={{ display: 'block', flexShrink: 0 }}
-         overflow="visible">
-      <defs>
-        <filter id="xusta-mark-filter" colorInterpolationFilters="sRGB"
-                x="0" y="0" width="1" height="1">
-          {/* Invert luminance to alpha: white bg → alpha=0, dark lines → alpha=1 */}
-          <feColorMatrix type="matrix"
-            values="0 0 0 0 0
-                    0 0 0 0 0
-                    0 0 0 0 0
-                   -1 -1 -1 3 0"
-            result="alphaFromLuma"/>
-          {/* Flood fill with brand color */}
-          <feFlood floodColor={color} result="brandFill"/>
-          {/* Clip brand color to the logo lines only */}
-          <feComposite in="brandFill" in2="alphaFromLuma" operator="in"/>
-        </filter>
-      </defs>
-      <image href="uploads/logo.png"
-             width={size} height={size}
-             preserveAspectRatio="xMidYMid meet"
-             filter="url(#xusta-mark-filter)"/>
-    </svg>
+    <div style={{
+      width: size, height: size, flexShrink: 0,
+      display: 'inline-block', verticalAlign: 'middle',
+      background: color,
+      maskImage: 'url(uploads/logo.png)',
+      maskSize: 'contain',
+      maskRepeat: 'no-repeat',
+      maskPosition: 'center',
+      maskMode: 'luminance',
+      WebkitMaskImage: 'url(uploads/logo.png)',
+      WebkitMaskSize: 'contain',
+      WebkitMaskRepeat: 'no-repeat',
+      WebkitMaskPosition: 'center',
+      WebkitMaskMode: 'luminance',
+    }} />
   );
 }
 
 // Full lockup: brand mark + "Xusta" script — used on splash / profile card.
-function XustaLockup({ color = '#1FE583', size = 80 }) {
+function XustaLockup({ color = '#1FE583', size = 80, dark = true }) {
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
     }}>
-      <XustaMarkV2 color={color} size={size} />
+      <XustaMarkV2 color={color} size={size} dark={dark} />
       <span className="script" style={{
         color, fontSize: size * 0.38, lineHeight: 1, letterSpacing: '0.02em',
       }}>Xusta</span>
@@ -500,7 +490,7 @@ function OrdersScreenV2({ orders, T }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <BrandHeader title="ORDERS" T={T} trailing={
+      <BrandHeader title="Orders" T={T} trailing={
         <>
           <IconBtn T={T}>
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -637,88 +627,84 @@ function OrderCardV2({ o, T }) {
   const isBuy = o.side === 'BUY';
   const isComplete = o.status === 'COMPLETE';
   const progress = o.qty ? (o.filled / o.qty) : 0;
-  const progressColor = isComplete ? T.up : progress > 0 ? T.up : T.text3;
 
   const sideStyle = {
-    fontSize: 12, fontWeight: 800, letterSpacing: '0.07em',
-    padding: '4px 11px', borderRadius: 5,
+    fontSize: 10, fontWeight: 800, letterSpacing: '0.07em',
+    padding: '2px 7px', borderRadius: 4,
     background: isBuy ? T.upDim : T.downDim,
     color: isBuy ? T.up : T.down,
-    lineHeight: 1.3,
+    lineHeight: 1.4, flexShrink: 0,
   };
 
   const statusStyle = {
-    fontSize: 10, fontWeight: 700, letterSpacing: '0.06em',
-    padding: '3px 7px', borderRadius: 3,
+    fontSize: 9, fontWeight: 700, letterSpacing: '0.06em',
+    padding: '2px 6px', borderRadius: 3,
     background: isComplete ? T.upDim : 'oklch(0.72 0.16 245 / 0.18)',
     color: isComplete ? T.up : T.info,
+    flexShrink: 0,
   };
 
   return (
     <div style={{
       background: T.surface, borderRadius: T.radius.md,
       border: `0.5px solid ${T.borderS}`,
-      padding: '14px 14px 16px',
-      marginBottom: 12,
+      padding: '10px 14px 12px',
+      marginBottom: 8,
       position: 'relative', overflow: 'hidden',
+      display: 'flex', alignItems: 'center', gap: 12,
     }}>
-      {/* meta row */}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8,
-      }}>
-        <span style={sideStyle}>{o.side}</span>
-        <span className="mono" style={{ fontSize: 13, color: T.text2, letterSpacing: '0.01em' }}>
-          {o.filled} <span style={{ opacity: 0.35 }}>/</span> {o.qty}
-        </span>
-        <div style={{ flex: 1 }} />
+      {/* Left: badge + symbol + meta */}
+      <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
-          display: 'flex', alignItems: 'center', gap: 4, color: T.text3, fontSize: 11,
+          display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3,
         }}>
-          <svg width="11" height="11" viewBox="0 0 11 11">
+          <span style={sideStyle}>{o.side}</span>
+          <span className="mono" style={{ fontSize: 11, color: T.text3, letterSpacing: '0.01em' }}>
+            {o.filled} <span style={{ opacity: 0.35 }}>/</span> {o.qty}
+          </span>
+        </div>
+        <div style={{
+          color: T.text, fontSize: 15, fontWeight: 700, letterSpacing: '-0.01em',
+          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          marginBottom: 2,
+        }}>{o.instrument.split(' ')[0].toUpperCase()}</div>
+        <div className="mono" style={{
+          fontSize: 11, color: T.text3, letterSpacing: '0.04em',
+        }}>{(o.exch || '').toUpperCase()} · {(o.product || '').toUpperCase()} {(o.orderType || '').toUpperCase()}</div>
+      </div>
+
+      {/* Right: status + price + time */}
+      <div style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
+        flexShrink: 0, gap: 3,
+      }}>
+        <span style={statusStyle}>{o.status === 'PARTIAL' ? 'OPEN' : o.status}</span>
+        <span className="mono" style={{
+          fontSize: 15, fontWeight: 700, letterSpacing: '-0.02em', color: T.text,
+        }}>{fmtINR(o.price)}</span>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 3, color: T.text3, fontSize: 10,
+        }}>
+          <svg width="9" height="9" viewBox="0 0 11 11">
             <circle cx="5.5" cy="5.5" r="4.5" fill="none" stroke="currentColor" strokeWidth="1"/>
             <path d="M5.5 2.5v3l2 1.5" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
           </svg>
           <span className="mono">{o.time}</span>
         </div>
-        <span style={statusStyle}>{o.status === 'PARTIAL' ? 'OPEN' : o.status}</span>
       </div>
 
-      {/* symbol + price */}
-      <div style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
-      }}>
-        <span style={{
-          color: T.text, fontSize: 26, fontWeight: 700, letterSpacing: '-0.02em',
-        }}>{o.instrument.split(' ')[0].toUpperCase()}</span>
-        <span style={{ display: 'flex', alignItems: 'baseline', gap: 5, color: T.text3, fontSize: 12 }}>
-          {o.status === 'GTT' ? 'Trigger' : 'Avg.'}
-          <span className="mono" style={{
-            color: T.text, fontSize: 20, fontWeight: 700, letterSpacing: '-0.02em',
-          }}>{fmtINR(o.price)}</span>
-        </span>
-      </div>
-
-      {/* bottom meta */}
-      <div style={{
-        display: 'flex', justifyContent: 'space-between', marginTop: 6,
-        fontSize: 11, color: T.text3, letterSpacing: '0.06em', fontWeight: 500,
-      }}>
-        <span>{o.exch ? o.exch.toUpperCase() : ''}</span>
-        <span>{(o.product || '').toUpperCase()} {(o.orderType || '').toUpperCase()}</span>
-      </div>
-
-      {/* progress bar */}
-      <div style={{
-        position: 'absolute', left: 14, right: 14, bottom: 6,
-        height: 2, borderRadius: 1,
-        background: T.surface3,
-      }}>
+      {/* progress bar — only when partially filled */}
+      {progress > 0 && progress < 1 && (
         <div style={{
-          height: '100%', width: `${progress * 100}%`,
-          background: progressColor, borderRadius: 1,
-          transition: 'width .3s',
-        }} />
-      </div>
+          position: 'absolute', left: 14, right: 14, bottom: 4,
+          height: 2, borderRadius: 1, background: T.surface3,
+        }}>
+          <div style={{
+            height: '100%', width: `${progress * 100}%`,
+            background: T.up, borderRadius: 1, transition: 'width .3s',
+          }} />
+        </div>
+      )}
     </div>
   );
 }
@@ -1182,7 +1168,7 @@ function ProfileScreenV2({ T, totalValue, brokers, feedBroker, onChangeFeedBroke
           display: 'flex', justifyContent: 'center',
           padding: '4px 0 18px',
         }}>
-          <XustaLockup color={T.brand} size={56} />
+          <XustaLockup color={T.brand} size={56} dark={T.dark} />
         </div>
 
         {/* User card */}
