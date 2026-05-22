@@ -8,7 +8,7 @@ const { useState: useV, useEffect: useEV, useRef: useRV, useMemo: useMV } = Reac
 function BrandHeader({ title, T, trailing, showWordmark = false }) {
   return (
     <div style={{
-      padding: '60px 16px 18px',
+      padding: '16px 20px 14px',
       display: 'flex', alignItems: 'center', gap: 8,
     }}>
       <XustaMarkV2 color={T.brand} size={36} dark={T.dark} />

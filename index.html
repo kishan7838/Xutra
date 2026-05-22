@@ -12,24 +12,19 @@
 <style>
   html, body {
     margin: 0; padding: 0; background: #0c0e12;
-    min-height: 100vh; overflow: hidden;
+    height: 100%; overflow: hidden;
     font-family: -apple-system, "SF Pro Text", system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
-  body.light-stage { background: oklch(0.94 0.02 12); }
+  body.light-stage { background: oklch(0.985 0.008 12); }
   #stage {
-    width: 100vw; height: 100vh;
-    display: flex; align-items: center; justify-content: center;
-    position: relative;
-  }
-  .device-wrap {
-    transform-origin: center center;
+    width: 100%; height: 100%;
   }
   .mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-variant-numeric: tabular-nums; }
   .script { font-family: "Caveat", "Brush Script MT", cursive; }
-  /* hide scrollbars inside the device viewport */
-  .device-wrap *::-webkit-scrollbar { display: none; }
-  .device-wrap * { scrollbar-width: none; }
+  /* hide scrollbars globally */
+  *::-webkit-scrollbar { display: none; }
+  * { scrollbar-width: none; }
 </style>
 </head>
 <body style="font-family: system-ui">

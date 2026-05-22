@@ -166,12 +166,10 @@ function DarkToggleBtn({ dark, T, onToggle }) {
   const [pos, setPos] = useStateA({ x: null, y: null }); // null = use default
   const drag = useRefA(null); // { startX, startY, initX, initY, moved }
 
-  const DEVICE_W = 390;
-  const DEVICE_H = 844;
   const BTN = 31; // button hit-area diameter
 
-  const defaultX = DEVICE_W - 14 - BTN;
-  const defaultY = 58;
+  const defaultX = window.innerWidth - 14 - BTN;
+  const defaultY = 16;
 
   const cx = pos.x ?? defaultX;
   const cy = pos.y ?? defaultY;
@@ -188,8 +186,8 @@ function DarkToggleBtn({ dark, T, onToggle }) {
     const dy = e.clientY - drag.current.startY;
     if (!drag.current.moved && Math.hypot(dx, dy) > 4) drag.current.moved = true;
     if (!drag.current.moved) return;
-    const nx = Math.min(Math.max(drag.current.initX + dx, 6), DEVICE_W - BTN - 6);
-    const ny = Math.min(Math.max(drag.current.initY + dy, 44), DEVICE_H - BTN - 80);
+    const nx = Math.min(Math.max(drag.current.initX + dx, 6), window.innerWidth - BTN - 6);
+    const ny = Math.min(Math.max(drag.current.initY + dy, 8), window.innerHeight - BTN - 60);
     setPos({ x: nx, y: ny });
   };
 
@@ -253,18 +251,6 @@ function App() {
     document.body.classList.toggle('light-stage', !t.dark);
   }, [t.dark]);
 
-  // Auto-scale device to fit viewport
-  const [scale, setScale] = useStateA(1);
-  useEffectA(() => {
-    const calc = () => {
-      const w = window.innerWidth, h = window.innerHeight;
-      const s = Math.min(w / 402, h / 874, 1);
-      setScale(s);
-    };
-    calc();
-    window.addEventListener('resize', calc);
-    return () => window.removeEventListener('resize', calc);
-  }, []);
 
   // Live ticking state
   const [positions, setPositions] = useStateA(() =>
@@ -415,14 +401,12 @@ function App() {
 
   return (
     <>
-      <div className="device-wrap" style={{ transform: `scale(${scale})` }}>
-        <IOSDevice dark={t.dark}>
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: T.bg,
-            display: 'flex', flexDirection: 'column',
-            overflow: 'hidden',
-          }}>
+      <div style={{
+          position: 'fixed', inset: 0,
+          background: T.bg,
+          display: 'flex', flexDirection: 'column',
+          overflow: 'hidden',
+        }}>
               {/* ── Dark / Light mode toggle (draggable) ── */}
             <DarkToggleBtn dark={t.dark} T={T} onToggle={() => setTweak('dark', !t.dark)} />
 
@@ -530,8 +514,6 @@ function App() {
             <Toast message={toast?.msg} type={toast?.type} T={T} onClose={() => setToast(null)} />
             <TabBar active={tab} onChange={handleTab} T={T} />
           </div>
-        </IOSDevice>
-      </div>
 
       <TweaksPanel title="Tweaks">
         <TweakSection label="Brand color">
