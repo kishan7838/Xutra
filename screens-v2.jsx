@@ -30,14 +30,21 @@ function BrandHeader({ title, T, trailing, showWordmark = false }) {
   );
 }
 
-// Clean classic X — two crossing strokes, rounded ends.
+// Xusta brand mark — uses the actual logo.png from uploads/
 function XustaMarkV2({ color = '#1FE583', size = 30 }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: 'block', flexShrink: 0 }}>
-      <path d="M 4 4 L 20 20 M 20 4 L 4 20"
-            stroke={color} strokeWidth="3" fill="none"
-            strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
+    <img
+      src="uploads/logo.png"
+      width={size}
+      height={size}
+      style={{
+        display: 'block',
+        flexShrink: 0,
+        objectFit: 'contain',
+        filter: 'invert(1)',   // makes the dark logo visible on dark bg
+      }}
+      alt="Xusta"
+    />
   );
 }
 
