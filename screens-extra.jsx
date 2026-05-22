@@ -13,7 +13,7 @@ function WatchlistScreen({ indices, watchlists, T, activeList, onChangeList, onS
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', position: 'relative' }}>
       {/* Header */}
-      <div style={{ padding: '52px 16px 0' }}>
+      <div style={{ padding: '16px 16px 0' }}>
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           marginBottom: 10
@@ -748,7 +748,7 @@ function ProfileScreen({ T, totalValue }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <div style={{ padding: '52px 16px 0' }}>
+      <div style={{ padding: '16px 16px 0' }}>
         <div style={{
           display: 'flex', alignItems: 'center', gap: 8,
           color: T.text, fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em',
@@ -889,7 +889,7 @@ function OrdersScreen({ orders, T, onSelectOrder }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', position: 'relative' }}>
       {/* Header */}
-      <div style={{ padding: '52px 16px 0' }}>
+      <div style={{ padding: '16px 16px 0' }}>
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           marginBottom: 14
