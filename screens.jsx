@@ -781,20 +781,28 @@ function RowKV({ label, value, sub, subColor, strong, T }) {
 }
 
 function XustaMark({ T, size = 22 }) {
-  // Xusta brand mark — uses the actual logo.png from uploads/
+  // Same SVG filter technique: white bg → transparent, dark lines → T.brand color
   return (
-    <img
-      src="uploads/logo.png"
-      width={size}
-      height={size}
-      style={{
-        display: 'block',
-        flexShrink: 0,
-        objectFit: 'contain',
-        filter: 'invert(1)',   // makes the dark logo visible on dark bg
-      }}
-      alt="Xusta"
-    />
+    <svg width={size} height={size} style={{ display: 'block', flexShrink: 0 }}
+         overflow="visible">
+      <defs>
+        <filter id="xusta-mark-filter-b" colorInterpolationFilters="sRGB"
+                x="0" y="0" width="1" height="1">
+          <feColorMatrix type="matrix"
+            values="0 0 0 0 0
+                    0 0 0 0 0
+                    0 0 0 0 0
+                   -1 -1 -1 3 0"
+            result="alphaFromLuma"/>
+          <feFlood floodColor={T.brand} result="brandFill"/>
+          <feComposite in="brandFill" in2="alphaFromLuma" operator="in"/>
+        </filter>
+      </defs>
+      <image href="uploads/logo.png"
+             width={size} height={size}
+             preserveAspectRatio="xMidYMid meet"
+             filter="url(#xusta-mark-filter-b)"/>
+    </svg>
   );
 }
 

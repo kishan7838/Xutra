@@ -30,21 +30,34 @@ function BrandHeader({ title, T, trailing, showWordmark = false }) {
   );
 }
 
-// Xusta brand mark — uses the actual logo.png from uploads/
+// Xusta brand mark — renders logo.png tinted to exactly T.brand color.
+// SVG filter: feColorMatrix converts white bg → transparent, dark lines → opaque,
+// then feFlood + feComposite fills the opaque areas with the brand color.
 function XustaMarkV2({ color = '#1FE583', size = 30 }) {
   return (
-    <img
-      src="uploads/logo.png"
-      width={size}
-      height={size}
-      style={{
-        display: 'block',
-        flexShrink: 0,
-        objectFit: 'contain',
-        filter: 'invert(1)',   // makes the dark logo visible on dark bg
-      }}
-      alt="Xusta"
-    />
+    <svg width={size} height={size} style={{ display: 'block', flexShrink: 0 }}
+         overflow="visible">
+      <defs>
+        <filter id="xusta-mark-filter" colorInterpolationFilters="sRGB"
+                x="0" y="0" width="1" height="1">
+          {/* Invert luminance to alpha: white bg → alpha=0, dark lines → alpha=1 */}
+          <feColorMatrix type="matrix"
+            values="0 0 0 0 0
+                    0 0 0 0 0
+                    0 0 0 0 0
+                   -1 -1 -1 3 0"
+            result="alphaFromLuma"/>
+          {/* Flood fill with brand color */}
+          <feFlood floodColor={color} result="brandFill"/>
+          {/* Clip brand color to the logo lines only */}
+          <feComposite in="brandFill" in2="alphaFromLuma" operator="in"/>
+        </filter>
+      </defs>
+      <image href="uploads/logo.png"
+             width={size} height={size}
+             preserveAspectRatio="xMidYMid meet"
+             filter="url(#xusta-mark-filter)"/>
+    </svg>
   );
 }
 
