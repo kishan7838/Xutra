@@ -5,8 +5,8 @@ const { useState: useStateS, useEffect: useEffectS, useRef: useRefS, useMemo: us
 // ─── PositionsScreen ────────────────────────────────────────────────────────
 // Two text-tabs with badge counts: Holdings | Positions (matches screenshot).
 // Holdings uses the new HoldingRow (tap to toggle P&L↔LTP emphasis).
-function PositionsScreen({ positions, holdings, brokers, brokerFilter, onChangeBrokerFilter, T, onOpenOrder, onSelectStock, onSquareOffAll }) {
-  const [seg, setSeg] = useStateS('holdings'); // holdings | positions
+function PositionsScreen({ positions, holdings, brokers, brokerFilter, onChangeBrokerFilter, T, onOpenOrder, onSelectStock, onSquareOffAll, seg = 'holdings', onChangeSeg }) {
+  const setSeg = (v) => onChangeSeg && onChangeSeg(v);
   const list = seg === 'holdings' ? holdings : positions;
 
   // Day's P&L totals — surfaced in a fixed band above the tab bar.
@@ -81,12 +81,7 @@ function PositionsScreen({ positions, holdings, brokers, brokerFilter, onChangeB
               <button key={b.id}
                 onClick={() => onChangeBrokerFilter(b.id)}
                 style={brokerChipStyle(T, on, b.color)}>
-                <span style={{
-                  width: 16, height: 16, borderRadius: 4,
-                  background: b.color, color: '#08120c',
-                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 10, fontWeight: 800,
-                }}>{b.short}</span>
+                <BrokerLogo id={b.id} size={16} />
                 {b.name} ({count})
               </button>
             );
@@ -363,7 +358,7 @@ function PositionRow({ p, T, onOpenOrder, onSelectStock }) {
     longPressRef.current = setTimeout(() => {
       triggeredRef.current = true;
       navigator.vibrate && navigator.vibrate(30);
-      onOpenOrder(p, 'buy');
+      onOpenOrder(p, p.qty >= 0 ? 'sell' : 'buy', Math.abs(p.qty));
     }, 500);
   };
   const cancelLongPress = () => {

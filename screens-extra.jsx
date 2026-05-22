@@ -1221,7 +1221,7 @@ function HoldingRow({ p, T, onClick, onOpenOrder }) {
   const cancelLongPress = () => clearTimeout(longPressRef.current);
   const handleUp = () => {
     cancelLongPress();
-    if (!triggeredRef.current && onOpenOrder) onOpenOrder(p, 'buy', 1);
+    if (!triggeredRef.current && onOpenOrder) onOpenOrder(p, 'sell', p.qty);
   };
 
   return (
@@ -1251,20 +1251,10 @@ function HoldingRow({ p, T, onClick, onOpenOrder }) {
           {p.broker && (
             <>
               <span style={{ opacity: 0.4 }}>•</span>
-              <span style={{
-                display: 'inline-flex', alignItems: 'center', gap: 4,
-                color: T.text3,
-              }}>
-                <span style={{
-                  width: 6, height: 6, borderRadius: '50%',
-                  background: brokerColorOf(p.broker),
-                  display: 'inline-block',
-                }} />
-                <span style={{
-                  fontSize: 10, fontWeight: 600,
-                  letterSpacing: '0.06em', textTransform: 'uppercase',
-                }}>{brokerNameOf(p.broker)}</span>
-              </span>
+              <BrokerLogo id={p.broker} size={14} />
+              <span style={{ fontSize: 10, fontWeight: 600, color: T.text3,
+                letterSpacing: '0.05em', textTransform: 'uppercase',
+              }}>{brokerNameOf(p.broker)}</span>
             </>
           )}
         </div>
@@ -1384,10 +1374,7 @@ function HoldingGroupRow({ g, T, onClick, onOpenOrder }) {
             <span style={{ opacity: 0.4 }}>•</span>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
               {rows.map(b => (
-                <span key={b.broker} style={{
-                  width: 6, height: 6, borderRadius: '50%',
-                  background: brokerColorOf(b.broker), display: 'inline-block',
-                }} />
+                <BrokerLogo key={b.broker} id={b.broker} size={13} />
               ))}
               <span style={{ marginLeft: 3, fontSize: 10, fontWeight: 600, color: T.text3, letterSpacing: '0.06em' }}>
                 {rows.length} BROKERS
@@ -1443,17 +1430,14 @@ function HoldingGroupRow({ g, T, onClick, onOpenOrder }) {
             const bc = bUp ? T.up : T.down;
             return (
               <div key={b.broker}
-                onClick={(e) => { e.stopPropagation(); onOpenOrder && onOpenOrder(b, 'buy', 1); }}
+                onClick={(e) => { e.stopPropagation(); onOpenOrder && onOpenOrder(b, 'sell', b.qty); }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 10,
                   padding: '8px 0',
                   borderTop: i > 0 ? `0.5px dashed ${T.borderS}` : 'none',
                   cursor: 'pointer',
                 }}>
-                <span style={{
-                  width: 8, height: 8, borderRadius: '50%',
-                  background: brokerColorOf(b.broker), flexShrink: 0,
-                }} />
+                <BrokerLogo id={b.broker} size={18} />
                 <span className="mono" style={{
                   fontSize: 10, color: T.text2, fontWeight: 700,
                   letterSpacing: '0.06em', textTransform: 'uppercase',
@@ -1480,12 +1464,37 @@ function HoldingGroupRow({ g, T, onClick, onOpenOrder }) {
 
 // broker lookup helpers (kept on window so HoldingRow can use without prop drilling)
 const BROKER_MAP = {
-  zerodha:  { short: 'Z', name: 'Zerodha',  color: 'oklch(0.72 0.16 245)' },
-  groww:    { short: 'G', name: 'Groww',    color: 'oklch(0.84 0.18 145)' },
-  upstox:   { short: 'U', name: 'Upstox',   color: 'oklch(0.76 0.18 280)' },
-  angelone: { short: 'A', name: 'AngelOne', color: 'oklch(0.78 0.16 50)' },
+  zerodha:  { short: 'Z', name: 'Zerodha',  color: 'oklch(0.72 0.16 245)', logo: 'uploads/ZERODHA.png' },
+  groww:    { short: 'G', name: 'Groww',    color: 'oklch(0.84 0.18 145)', logo: 'uploads/GROWW.png' },
+  upstox:   { short: 'U', name: 'Upstox',   color: 'oklch(0.76 0.18 280)', logo: 'uploads/UPSTOX.png' },
+  angelone: { short: 'A', name: 'AngelOne', color: 'oklch(0.78 0.16 50)',  logo: 'uploads/ANGLEONE.png' },
 };
 function brokerColorOf(id) { return (BROKER_MAP[id] || {}).color || 'oklch(0.7 0 0)'; }
 function brokerShortOf(id) { return (BROKER_MAP[id] || {}).short || '?'; }
 function brokerNameOf(id)  { return (BROKER_MAP[id] || {}).name  || id; }
-Object.assign(window, { brokerColorOf, brokerShortOf, brokerNameOf });
+function brokerLogoOf(id)  { return (BROKER_MAP[id] || {}).logo  || null; }
+
+function BrokerLogo({ id, size = 22 }) {
+  const logo = brokerLogoOf(id);
+  const r = Math.round(size * 0.22);
+  if (logo) {
+    return (
+      <img src={logo} width={size} height={size}
+           style={{
+             borderRadius: r, objectFit: 'contain',
+             display: 'block', flexShrink: 0,
+           }}
+           alt={brokerNameOf(id)} />
+    );
+  }
+  return (
+    <span style={{
+      width: size, height: size, borderRadius: r, flexShrink: 0,
+      background: brokerColorOf(id), color: '#08120c',
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+      fontSize: Math.round(size * 0.5), fontWeight: 800,
+    }}>{brokerShortOf(id)}</span>
+  );
+}
+
+Object.assign(window, { brokerColorOf, brokerShortOf, brokerNameOf, brokerLogoOf, BrokerLogo });

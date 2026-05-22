@@ -1273,12 +1273,7 @@ function ProfileScreenV2({ T, totalValue, brokers, feedBroker, onChangeFeedBroke
                   padding: '12px 14px',
                   borderBottom: i < brokers.length - 1 ? `0.5px solid ${T.borderS}` : 'none',
                 }}>
-                  <div style={{
-                    width: 32, height: 32, borderRadius: 7,
-                    background: b.color, color: '#08120c',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 16, fontWeight: 800,
-                  }}>{b.short}</div>
+                  <BrokerLogo id={b.id} size={32} />
                   <div style={{ flex: 1 }}>
                     <div style={{ color: T.text, fontSize: 14, fontWeight: 600 }}>{b.name}</div>
                     <div className="mono" style={{ color: T.text3, fontSize: 11, marginTop: 2 }}>

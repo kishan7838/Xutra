@@ -319,6 +319,7 @@ function App() {
   const [activeList, setActiveList] = useStateA('Watchlist 1');
   const [brokerFilter, setBrokerFilter] = useStateA('all'); // 'all' | broker.id
   const [feedBroker, setFeedBroker] = useStateA('zerodha'); // which broker the live LTP feed comes from
+  const [portfolioSeg, setPortfolioSeg] = useStateA('holdings'); // 'holdings' | 'positions' — survives navigation
 
   // Pick latest data for activeStock from any of the lists
   const stockLive = useMemoA(() => {
@@ -481,6 +482,8 @@ function App() {
                   setPositions(prev => prev.filter(p => !ids.has(`${p.symbol}|${p.broker}`)));
                   setToast({ type: 'info', msg: `Squared off ${n} position${n > 1 ? 's' : ''} at market` });
                 }}
+                seg={portfolioSeg}
+                onChangeSeg={setPortfolioSeg}
               />
             )}
             {screen === 'order' && stockLive && (
