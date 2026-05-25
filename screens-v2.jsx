@@ -146,7 +146,7 @@ const STOCK_UNIVERSE = [
   { symbol: 'NIFTY',      exch: 'NFO', name: 'Nifty Futures' },
 ];
 
-function WatchlistScreenV2({ indices, watchlists, T, activeList, onChangeList, onSelectStock, onOpenOrder, onAddStock, onSelectEvents }) {
+function WatchlistScreenV2({ indices, watchlists, T, activeList, onChangeList, onSelectStock, onOpenOrder, onOpenChain, onAddStock, onSelectEvents }) {
   const [query, setQuery] = useV('');
   const list = watchlists[activeList] || [];
   const inListSymbols = useMV(() => new Set(list.map(s => s.symbol)), [list]);
@@ -171,7 +171,7 @@ function WatchlistScreenV2({ indices, watchlists, T, activeList, onChangeList, o
       <div style={{ padding: '0 16px' }}>
         {/* Big index cards */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-          {heroes.map(idx => <HeroIndexCard key={idx.symbol} idx={idx} T={T} />)}
+          {heroes.map(idx => <HeroIndexCard key={idx.symbol} idx={idx} T={T} onOpenChain={onOpenChain} />)}
         </div>
 
         {/* Search */}
@@ -231,6 +231,7 @@ function WatchlistScreenV2({ indices, watchlists, T, activeList, onChangeList, o
             <WatchlistRowV2 key={s.symbol} s={s} T={T}
                             onSelectStock={onSelectStock}
                             onOpenOrder={onOpenOrder}
+                            onOpenChain={onOpenChain}
                             onSelectEvents={onSelectEvents} />
           ))
         ) : searchResults.length === 0 ? (
@@ -306,14 +307,19 @@ function SearchResultRow({ s, inList, T, onSelectStock }) {
   );
 }
 
-function HeroIndexCard({ idx, T }) {
+function HeroIndexCard({ idx, T, onOpenChain }) {
   const up = idx.changePct >= 0;
+  const supportsChain = onOpenChain && window.OPTION_CHAIN_SYMBOLS?.has(idx.symbol);
   return (
-    <div style={{
+    <div
+      onClick={supportsChain ? () => onOpenChain(idx) : undefined}
+      style={{
       background: T.surface, borderRadius: T.radius.md,
       border: `0.5px solid ${T.borderS}`,
       padding: '12px 14px',
       minHeight: 78,
+      cursor: supportsChain ? 'pointer' : 'default',
+      position: 'relative',
     }}>
       <div style={{
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -322,17 +328,33 @@ function HeroIndexCard({ idx, T }) {
         <span style={{
           fontSize: 11, color: T.text2, fontWeight: 600, letterSpacing: '0.06em',
         }}>{idx.symbol}</span>
-        <svg width="18" height="14" viewBox="0 0 18 14">
-          {up ? (
-            <path d="M1 11l5-5 4 3 7-7M12 2h5v5"
-                  stroke={T.up} strokeWidth="1.6" fill="none"
-                  strokeLinecap="round" strokeLinejoin="round"/>
-          ) : (
-            <path d="M1 3l5 5 4-3 7 7M12 12h5V7"
-                  stroke={T.down} strokeWidth="1.6" fill="none"
-                  strokeLinecap="round" strokeLinejoin="round"/>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {supportsChain && (
+            <span style={{
+              color: T.brand,
+              background: `color-mix(in oklch, ${T.brand} 14%, transparent)`,
+              width: 24, height: 20, borderRadius: 4,
+              border: `0.5px solid color-mix(in oklch, ${T.brand} 35%, transparent)`,
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                <path d="M2 12l3-5 3 3 6-7M10 3h4v4" stroke="currentColor"
+                      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </span>
           )}
-        </svg>
+          <svg width="18" height="14" viewBox="0 0 18 14">
+            {up ? (
+              <path d="M1 11l5-5 4 3 7-7M12 2h5v5"
+                    stroke={T.up} strokeWidth="1.6" fill="none"
+                    strokeLinecap="round" strokeLinejoin="round"/>
+            ) : (
+              <path d="M1 3l5 5 4-3 7 7M12 12h5V7"
+                    stroke={T.down} strokeWidth="1.6" fill="none"
+                    strokeLinecap="round" strokeLinejoin="round"/>
+            )}
+          </svg>
+        </div>
       </div>
       <AnimatedNumber
         value={idx.value} T={T}
@@ -346,7 +368,7 @@ function HeroIndexCard({ idx, T }) {
   );
 }
 
-function WatchlistRowV2({ s, T, onSelectStock, onOpenOrder, onSelectEvents }) {
+function WatchlistRowV2({ s, T, onSelectStock, onOpenOrder, onOpenChain, onSelectEvents }) {
   const up = s.dayPct >= 0;
   const c = up ? T.up : T.down;
   const [dx, setDx] = useV(0);
@@ -430,6 +452,24 @@ function WatchlistRowV2({ s, T, onSelectStock, onOpenOrder, onSelectEvents }) {
               fontSize: 10, fontWeight: 500, color: T.text3,
               background: T.surface3, padding: '2px 5px', borderRadius: 3,
             }}>{s.exch}</span>
+            {onOpenChain && window.OPTION_CHAIN_SYMBOLS?.has(s.symbol) && (
+              <span
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => { e.stopPropagation(); onOpenChain(s); }}
+                title="Open option chain"
+                style={{
+                  color: T.brand, cursor: 'pointer',
+                  background: `color-mix(in oklch, ${T.brand} 14%, transparent)`,
+                  width: 22, height: 18, borderRadius: 4,
+                  border: `0.5px solid color-mix(in oklch, ${T.brand} 35%, transparent)`,
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
+                  <path d="M2 12l3-5 3 3 6-7M10 3h4v4" stroke="currentColor"
+                        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </span>
+            )}
           </div>
           {s.flag && (
             <span
@@ -712,7 +752,20 @@ function OrderCardV2({ o, T }) {
 // ── OrderEntryScreenV2 ─────────────────────────────────────────────────────
 function OrderEntryScreenV2({ stock, defaultSide = 'buy', defaultQty = null, T, onSubmit, onBack }) {
   const [side, setSide] = useV(defaultSide); // buy | sell
-  const [productType, setProductType] = useV('DELIVERY'); // INTRADAY | DELIVERY | MTF
+  // NFO (options + futures) uses MIS/NRML; equity uses INTRADAY/DELIVERY/MTF.
+  const isNFO = stock.exch === 'NFO' || stock.type === 'OPT' || stock.type === 'FUT';
+  const productOptions = isNFO
+    ? [
+        { id: 'NRML',     label: 'NORMAL',   sub: 'NRML' },
+        { id: 'INTRADAY', label: 'INTRADAY', sub: 'MIS'  },
+      ]
+    : [
+        { id: 'INTRADAY', label: 'INTRADAY', sub: 'MIS' },
+        { id: 'DELIVERY', label: 'DELIVERY', sub: 'CNC' },
+        { id: 'MTF',      label: 'MTF',      sub: 'MARGIN' },
+      ];
+  const defaultProduct = isNFO ? 'NRML' : 'DELIVERY';
+  const [productType, setProductType] = useV(defaultProduct);
   const [orderType, setOrderType] = useV('LIMIT'); // MARKET | LIMIT | SL | SL-M
   const [qty, setQty] = useV(defaultQty != null ? defaultQty : 10);
   const [price, setPrice] = useV(stock.ltp);
@@ -723,8 +776,13 @@ function OrderEntryScreenV2({ stock, defaultSide = 'buy', defaultQty = null, T, 
 
   const isBuy = side === 'buy';
   const sideColor = isBuy ? T.up : T.down;
-  const margin = qty * (orderType === 'MARKET' ? stock.ltp : price)
-    * (productType === 'INTRADAY' ? 0.2 : productType === 'MTF' ? 0.25 : 1);
+  // Margin: equity DELIVERY = 100%, INTRADAY = 20%, MTF = 25%.
+  // NFO NRML = full SPAN+Exposure (mocked at ~15% of notional);
+  // NFO MIS gets ~40% intraday haircut, so ~9% of notional.
+  const notional = qty * (orderType === 'MARKET' ? stock.ltp : price);
+  const margin = isNFO
+    ? notional * (productType === 'INTRADAY' ? 0.09 : 0.15)
+    : notional * (productType === 'INTRADAY' ? 0.2 : productType === 'MTF' ? 0.25 : 1);
   const dayUp = stock.dayPct >= 0;
   const dayPriceColor = dayUp ? T.up : T.down;
 
@@ -745,15 +803,19 @@ function OrderEntryScreenV2({ stock, defaultSide = 'buy', defaultQty = null, T, 
                   strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
-            color: T.text, fontSize: 28, fontWeight: 800, letterSpacing: '-0.02em',
-            lineHeight: 1,
-          }}>{stock.symbol}</div>
+            color: T.text,
+            fontSize: isNFO ? 18 : 28,
+            fontWeight: isNFO ? 700 : 800,
+            letterSpacing: '-0.02em',
+            lineHeight: 1.1,
+            wordBreak: 'break-word',
+          }}>{isNFO ? instrumentLabel(stock) : stock.symbol}</div>
           <div style={{
             fontSize: 11, color: T.text3, fontWeight: 600, marginTop: 6,
             letterSpacing: '0.06em',
-          }}>{stock.exch} • {stock.type || 'EQ'}</div>
+          }}>{stock.exch} • {stock.type || 'EQ'}{stock.opt ? ` · ${stock.opt}` : ''}</div>
         </div>
         <div style={{ textAlign: 'right' }}>
           <AnimatedNumber
@@ -804,12 +866,12 @@ function OrderEntryScreenV2({ stock, defaultSide = 'buy', defaultQty = null, T, 
 
         {/* Product */}
         <SectionLabel T={T}>PRODUCT</SectionLabel>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
-          {[
-            { id: 'INTRADAY', label: 'INTRADAY', sub: 'MIS' },
-            { id: 'DELIVERY', label: 'DELIVERY', sub: 'CNC' },
-            { id: 'MTF',      label: 'MTF',      sub: 'MARGIN' },
-          ].map(p => {
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: isNFO ? '1fr 1fr' : '1fr 1fr 1fr',
+          gap: 8,
+        }}>
+          {productOptions.map(p => {
             const on = productType === p.id;
             return (
               <button key={p.id} onClick={() => setProductType(p.id)} style={{
@@ -1146,6 +1208,8 @@ function ProfileScreenV2({ T, totalValue, brokers, feedBroker, onChangeFeedBroke
       { icon: <BookIcon T={T}/>, label: 'My investments', sub: '₹' + fmtINR(totalValue, 0), accent: T.up },
       { icon: <StarIcon T={T}/>, label: 'Xusta Prime', sub: 'Active - renews 12 Jul' },
       { icon: <DocIcon T={T}/>, label: 'Tax & reports', sub: 'FY 2023-24' },
+      { icon: <PaletteIcon T={T}/>, label: 'Appearance', sub: 'Theme, brand color, density',
+        onClick: () => window.postMessage({ type: '__activate_edit_mode' }, '*') },
       { icon: <GearIcon T={T}/>, label: 'Settings' },
     ]},
     { group: 'SUPPORT', rows: [
@@ -1223,7 +1287,9 @@ function ProfileScreenV2({ T, totalValue, brokers, feedBroker, onChangeFeedBroke
               overflow: 'hidden',
             }}>
               {g.rows.map((r, i) => (
-                <div key={r.label} style={{
+                <div key={r.label}
+                     onClick={r.onClick}
+                     style={{
                   display: 'flex', alignItems: 'center', gap: 12,
                   padding: '14px 14px',
                   borderBottom: i < g.rows.length - 1 ? `0.5px solid ${T.borderS}` : 'none',
@@ -1385,6 +1451,16 @@ function GearIcon({ T }) {
     <circle cx="9" cy="9" r="2.5" stroke={T.text2} strokeWidth="1.5" fill="none"/>
     <path d="M9 2v2m0 10v2M2 9h2m10 0h2M3.6 3.6l1.5 1.5m7.8 7.8l1.5 1.5m0-10.8l-1.5 1.5M5.1 12.9l-1.5 1.5"
           stroke={T.text2} strokeWidth="1.5" strokeLinecap="round"/>
+  </svg>);
+}
+function PaletteIcon({ T }) {
+  return (<svg width="18" height="18" viewBox="0 0 18 18">
+    <path d="M9 1.5c-4.1 0-7.5 3.1-7.5 7 0 2.2 1.5 3.7 3.6 3.7H7c1 0 1.6.7 1.4 1.6l-.2.8c-.2 1.1.5 2 1.7 2 4.1 0 7.6-3.4 7.6-7.6 0-4.1-3.4-7.5-7.5-7.5z"
+          stroke={T.text2} strokeWidth="1.4" fill="none" strokeLinejoin="round"/>
+    <circle cx="5.2" cy="7.5" r="0.9" fill={T.text2}/>
+    <circle cx="8.2" cy="4.7" r="0.9" fill={T.text2}/>
+    <circle cx="12"  cy="6.0" r="0.9" fill={T.text2}/>
+    <circle cx="13" cy="9.4" r="0.9" fill={T.text2}/>
   </svg>);
 }
 function HelpIcon({ T }) {

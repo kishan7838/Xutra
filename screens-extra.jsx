@@ -312,7 +312,7 @@ function ArrowRight() {
 }
 
 // ─── StockDetailScreen ──────────────────────────────────────────────────────
-function StockDetailScreen({ stock, T, onBack, onOpenOrder, initialTab = 'analysis' }) {
+function StockDetailScreen({ stock, T, onBack, onOpenOrder, onOpenChain, initialTab = 'analysis' }) {
   const [tab, setTab] = useStateX(initialTab);
   const [range, setRange] = useStateX('1D');
   const up = stock.dayPct >= 0;
@@ -344,6 +344,21 @@ function StockDetailScreen({ stock, T, onBack, onOpenOrder, initialTab = 'analys
             {stock.companyName || stock.symbol}
           </div>
         </div>
+        {onOpenChain && window.OPTION_CHAIN_SYMBOLS?.has(stock.symbol) && (
+          <button onClick={() => onOpenChain(stock)} title="Option chain" style={{
+            width: 32, height: 32, borderRadius: '50%',
+            background: T.surface2, border: `0.5px solid ${T.border}`,
+            color: T.brand, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <path d="M2 12l3-5 3 3 6-7" stroke="currentColor" strokeWidth="1.5"
+                    strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M10 3h4v4" stroke="currentColor" strokeWidth="1.5"
+                    strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        )}
         <button style={{
           width: 32, height: 32, borderRadius: '50%',
           background: T.surface2, border: `0.5px solid ${T.border}`,

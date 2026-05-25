@@ -65,10 +65,10 @@ if (typeof document !== 'undefined' && !document.getElementById('xusta-global-st
 function useTokens(dark, density, brand) {
   return useMemo(() => {
     const compact = density === 'compact';
-    // Brand color → headers, logo, active tabs, action accents.
+    // Brand color drives headers, logo, active tabs, action accents.
+    // Sourced from the Tweaks panel; defaults to the soft peach if missing.
     // Up/Down → always green/red for price semantics (independent of brand).
-    // Same light pink accent in both themes.
-    const accent = 'oklch(0.82 0.10 14)';
+    const accent = brand || 'oklch(0.82 0.10 14)';
     // Work in any color space — accent may be oklch/hex/rgb.
     const mix = (a, pct) => `color-mix(in oklch, ${a} ${pct}%, transparent)`;
     const T = {

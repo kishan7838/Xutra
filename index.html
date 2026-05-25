@@ -17,8 +17,54 @@
     -webkit-font-smoothing: antialiased;
   }
   body.light-stage { background: oklch(0.985 0.008 12); }
+
+  /* ── Responsive stage ───────────────────────────────────────────────────
+     Strategy: the prototype is a single mobile app, so the "stage" mirrors
+     a real device viewport. On true phones it fills the screen edge-to-edge;
+     on larger viewports it centers a phone-shaped canvas whose height adapts
+     to the available space (no scrolling outside the canvas). */
   #stage {
+    position: relative;
     width: 100%; height: 100%;
+    overflow: hidden;
+  }
+
+  /* Phones (≤ 640px): fill the whole screen, no chrome. */
+  @media (max-width: 640px) {
+    body { background: #050608; }
+  }
+
+  /* Tablets + desktop: phone-shaped canvas centered. Width and height both
+     clamp so we never overflow on narrow desktops or short windows. */
+  @media (min-width: 641px) {
+    body {
+      background: #050608;
+      display: flex; align-items: center; justify-content: center;
+      padding: 16px;
+      box-sizing: border-box;
+    }
+    #stage {
+      width: clamp(320px, 92vw, 414px);
+      height: min(896px, calc(100dvh - 32px));
+      aspect-ratio: 9 / 19.5;
+      max-height: calc(100dvh - 32px);
+      border-radius: clamp(20px, 4vw, 40px);
+      overflow: hidden;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.06),
+                  0 30px 80px rgba(0,0,0,0.55),
+                  0 8px 32px rgba(0,0,0,0.35);
+    }
+    body.light-stage { background: oklch(0.92 0.012 12); }
+  }
+
+  /* Landscape on shorter screens: switch to a wider, shorter frame so
+     the prototype stays usable rather than getting squished vertically. */
+  @media (min-width: 641px) and (orientation: landscape) and (max-height: 700px) {
+    #stage {
+      width: min(420px, calc(100vh * 0.46));
+      height: calc(100dvh - 24px);
+      aspect-ratio: auto;
+    }
   }
   .mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-variant-numeric: tabular-nums; }
   .script { font-family: "Caveat", "Brush Script MT", cursive; }
@@ -51,6 +97,7 @@
 <script type="text/babel" src="screens-extra.jsx"></script>
 <script type="text/babel" src="screens-v2.jsx"></script>
 <script type="text/babel" src="home-screen.jsx"></script>
+<script type="text/babel" src="option-chain.jsx"></script>
 <script type="text/babel" src="app.jsx"></script>
 </body>
 </html>

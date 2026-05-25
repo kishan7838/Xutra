@@ -153,31 +153,47 @@ function enrichWatchlistEntry(s, seed) {
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "dark": true,
   "density": "comfortable",
-  "brand": "#F5EFE6"
+  "brand": "oklch(0.82 0.10 14)"
 }/*EDITMODE-END*/;
 
-// Curated brand palette options — each is the hex used as `T.brand`.
+// Curated brand palette options. The picker also exposes a custom-color
+// row below so users can pick anything outside this set.
 const BRAND_OPTIONS = [
-  '#F5EFE6', // warm cream (default)
+  '#F5EFE6',                    // warm cream (default)
+  'oklch(0.82 0.10 14)',        // soft peach
+  'oklch(0.86 0.22 155)',       // mint green
+  'oklch(0.78 0.16 50)',        // amber
+  'oklch(0.76 0.18 280)',       // lavender
+  'oklch(0.72 0.16 245)',       // sky blue
 ];
 
 // ── Draggable dark/light toggle button ────────────────────────────────────
 function DarkToggleBtn({ dark, T, onToggle }) {
   const [pos, setPos] = useStateA({ x: null, y: null }); // null = use default
-  const drag = useRefA(null); // { startX, startY, initX, initY, moved }
+  const drag = useRefA(null); // { startX, startY, initX, initY, moved, parentW, parentH }
+  const btnRef = useRefA(null);
 
   const BTN = 31; // button hit-area diameter
 
-  const defaultX = window.innerWidth - 14 - BTN;
-  const defaultY = 16;
-
-  const cx = pos.x ?? defaultX;
-  const cy = pos.y ?? defaultY;
+  // Default position: top-right of the parent (phone canvas in desktop mode,
+  // viewport on actual phones). null pos → resolved at render via right/top.
+  const cx = pos.x;
+  const cy = pos.y;
 
   const onPointerDown = (e) => {
     e.preventDefault();
     e.currentTarget.setPointerCapture(e.pointerId);
-    drag.current = { startX: e.clientX, startY: e.clientY, initX: cx, initY: cy, moved: false };
+    const parent = btnRef.current?.offsetParent;
+    const pRect = parent?.getBoundingClientRect() || { width: window.innerWidth, height: window.innerHeight };
+    const myRect = btnRef.current?.getBoundingClientRect() || { left: 0, top: 0 };
+    const pParentRect = parent?.getBoundingClientRect() || { left: 0, top: 0 };
+    drag.current = {
+      startX: e.clientX, startY: e.clientY,
+      initX: myRect.left - pParentRect.left,
+      initY: myRect.top  - pParentRect.top,
+      parentW: pRect.width, parentH: pRect.height,
+      moved: false,
+    };
   };
 
   const onPointerMove = (e) => {
@@ -186,8 +202,8 @@ function DarkToggleBtn({ dark, T, onToggle }) {
     const dy = e.clientY - drag.current.startY;
     if (!drag.current.moved && Math.hypot(dx, dy) > 4) drag.current.moved = true;
     if (!drag.current.moved) return;
-    const nx = Math.min(Math.max(drag.current.initX + dx, 6), window.innerWidth - BTN - 6);
-    const ny = Math.min(Math.max(drag.current.initY + dy, 8), window.innerHeight - BTN - 60);
+    const nx = Math.min(Math.max(drag.current.initX + dx, 6), drag.current.parentW - BTN - 6);
+    const ny = Math.min(Math.max(drag.current.initY + dy, 8), drag.current.parentH - BTN - 60);
     setPos({ x: nx, y: ny });
   };
 
@@ -198,14 +214,21 @@ function DarkToggleBtn({ dark, T, onToggle }) {
     if (!wasMoved) onToggle();
   };
 
+  // If user has dragged it, use absolute coords; otherwise anchor to top-right
+  // via `right` so it stays in the right place when the canvas resizes.
+  const positional = (cx == null || cy == null)
+    ? { right: 14, top: 16 }
+    : { left: cx, top: cy };
+
   return (
     <div
+      ref={btnRef}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       style={{
         position: 'absolute',
-        left: cx, top: cy,
+        ...positional,
         width: BTN, height: BTN,
         zIndex: 60,
         borderRadius: '50%',
@@ -308,9 +331,20 @@ function App() {
 
   // Screen routing — independent of tab so back navigation works
   const [tab, setTab] = useStateA('home');
-  const [screen, setScreen] = useStateA('home'); // home | watchlist | detail | order | positions | profile | orders
-  const [prevScreen, setPrevScreen] = useStateA(null);
-  const [prevTab, setPrevTab] = useStateA(null);
+  const [screen, setScreen] = useStateA('home'); // home | watchlist | detail | order | positions | profile | orders | chain
+  // Navigation stack so multi-hop flows (watchlist → detail → chain → order)
+  // pop in the correct reverse order. Each entry is { screen, tab }.
+  const [navStack, setNavStack] = useStateA([]);
+  const pushNav = () => setNavStack(s => [...s, { screen, tab }]);
+  const popNav = (fallbackScreen = 'watchlist', fallbackTab = 'watchlist') => {
+    setNavStack(s => {
+      const prev = s[s.length - 1];
+      const next = s.slice(0, -1);
+      if (prev) { setScreen(prev.screen); setTab(prev.tab); }
+      else      { setScreen(fallbackScreen); setTab(fallbackTab); }
+      return next;
+    });
+  };
   const [detailInitialTab, setDetailInitialTab] = useStateA('analysis');
   const [activeStock, setActiveStock] = useStateA(null);
   const [defaultSide, setDefaultSide] = useStateA('buy');
@@ -324,6 +358,20 @@ function App() {
   // Pick latest data for activeStock from any of the lists
   const stockLive = useMemoA(() => {
     if (!activeStock) return null;
+    // Indices live in their own array — keep the spot ticking when an option
+    // chain is open on NIFTY/BANKNIFTY.
+    const idx = indices.find(i => i.symbol === activeStock.symbol);
+    if (idx) return {
+      ...activeStock,
+      ltp: idx.value,
+      dayPct: idx.changePct,
+      dayChangeAmt: idx.value * idx.changePct / 100,
+    };
+    // For derivatives the strike + opt + expiry uniquely identify the contract.
+    // Skip the position-merge so we don't show a different strike's data.
+    if (activeStock.type === 'OPT' || activeStock.type === 'FUT') {
+      return activeStock;
+    }
     const all = [...positions, ...holdings, ...Object.values(watchlists).flat()];
     // Match on symbol + exchange + instrument type so an equity (NSE EQ) isn't
     // confused with an option/future on the same symbol (NFO OPT/FUT). Falls
@@ -338,19 +386,17 @@ function App() {
       || all.find(p => p.symbol === sym)
       || activeStock
     );
-  }, [activeStock, positions, holdings, watchlists]);
+  }, [activeStock, positions, holdings, watchlists, indices]);
 
   const openDetail = (stock, initialTab = 'analysis') => {
-    setPrevScreen(screen);
-    setPrevTab(tab);
+    pushNav();
     setActiveStock(stock);
     setDetailInitialTab(initialTab);
     setScreen('detail');
   };
 
   const openOrder = (stock, side = 'buy', qty = null) => {
-    setPrevScreen(screen);
-    setPrevTab(tab);
+    pushNav();
     setActiveStock(stock);
     setDefaultSide(side);
     setDefaultQty(qty);
@@ -366,8 +412,19 @@ function App() {
     });
   };
 
+  // Open the option chain for the given underlying. `stock` may be a watchlist
+  // entry or any object with .symbol; if the symbol isn't in OC_UNIVERSE we
+  // bail (the caller should already have gated the affordance).
+  const openChain = (stock) => {
+    if (!stock || !window.OPTION_CHAIN_SYMBOLS?.has(stock.symbol)) return;
+    pushNav();
+    setActiveStock(stock);
+    setScreen('chain');
+  };
+
   const handleTab = (id) => {
     setTab(id);
+    setNavStack([]); // tab switch resets back-stack — each tab is a fresh root
     if (id === 'home') setScreen('home');
     else if (id === 'watchlist') setScreen('watchlist');
     else if (id === 'portfolio') setScreen('positions');
@@ -408,6 +465,18 @@ function App() {
         setTab('watchlist'); setScreen('watchlist');
       } else if (target === 'profile') {
         setTab('profile'); setScreen('profile');
+      } else if (target === 'chain') {
+        // Build a synthetic stock entry from indices or watchlist
+        let s;
+        if (opts.symbol === 'NIFTY 50' || opts.symbol === 'BANK NIFTY') {
+          const idx = indices.find(i => i.symbol === opts.symbol);
+          s = idx ? { symbol: idx.symbol, exch: 'NSE', ltp: idx.value, dayPct: idx.changePct } : null;
+        } else {
+          const sym = opts.symbol || 'NIFTY 50';
+          s = watchlists['Watchlist 1'].find(x => x.symbol === sym)
+              || { symbol: sym, exch: 'NSE', ltp: 0, dayPct: 0 };
+        }
+        if (s) openChain(s);
       }
     };
   });
@@ -415,7 +484,7 @@ function App() {
   return (
     <>
       <div style={{
-          position: 'fixed', inset: 0,
+          position: 'absolute', inset: 0,
           background: T.bg,
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden',
@@ -445,6 +514,7 @@ function App() {
                 T={T}
                 onSelectStock={openDetail}
                 onOpenOrder={openOrder}
+                onOpenChain={openChain}
                 onSelectEvents={(s) => openDetail(s, 'events')}
                 onAddStock={(s) => {
                   setWatchlists(prev => {
@@ -467,13 +537,9 @@ function App() {
                 stock={stockLive}
                 T={T}
                 initialTab={detailInitialTab}
-                onBack={() => {
-                  const back = prevScreen || 'watchlist';
-                  setScreen(back);
-                  if (prevTab) setTab(prevTab);
-                  else setTab(back === 'positions' ? 'portfolio' : 'watchlist');
-                }}
+                onBack={() => popNav('watchlist', 'watchlist')}
                 onOpenOrder={openOrder}
+                onOpenChain={openChain}
               />
             )}
             {screen === 'positions' && (
@@ -506,12 +572,7 @@ function App() {
                 defaultQty={defaultQty}
                 T={T}
                 onSubmit={submitOrder}
-                onBack={() => {
-                  const back = prevScreen || 'watchlist';
-                  setScreen(back);
-                  if (prevTab) setTab(prevTab);
-                  else setTab(back === 'positions' ? 'portfolio' : 'watchlist');
-                }}
+                onBack={() => popNav('watchlist', 'watchlist')}
               />
             )}
             {screen === 'orders' && (
@@ -526,19 +587,32 @@ function App() {
                 onChangeFeedBroker={setFeedBroker}
               />
             )}
+            {screen === 'chain' && stockLive && (
+              <OptionChainScreen
+                symbol={stockLive.symbol}
+                spot={stockLive.ltp}
+                dayPct={stockLive.dayPct}
+                dayChange={stockLive.dayChangeAmt || (stockLive.ltp * stockLive.dayPct / 100)}
+                T={T}
+                onBack={() => popNav('watchlist', 'watchlist')}
+                onOpenOrder={openOrder}
+              />
+            )}
 
             <Toast message={toast?.msg} type={toast?.type} T={T} onClose={() => setToast(null)} />
-            {/* Bottom nav hidden on stack-pushed screens (Stock Detail, Order Entry)
-                so the back affordance is the primary navigation there. */}
-            {screen !== 'detail' && screen !== 'order' && (
+            {/* Bottom nav hidden on stack-pushed screens (Stock Detail, Order
+                Entry, Option Chain) so the back affordance is primary. */}
+            {screen !== 'detail' && screen !== 'order' && screen !== 'chain' && (
               <TabBar active={tab} onChange={handleTab} T={T} />
             )}
           </div>
 
       <TweaksPanel title="Tweaks">
         <TweakSection label="Brand color">
-          <TweakColor label="Accent" value={t.brand}
+          <TweakColor label="Preset" value={t.brand}
                       options={BRAND_OPTIONS}
+                      onChange={(v) => setTweak('brand', v)} />
+          <TweakColor label="Custom" value={t.brand}
                       onChange={(v) => setTweak('brand', v)} />
         </TweakSection>
         <TweakSection label="Appearance">
