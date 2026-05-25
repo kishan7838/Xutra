@@ -214,10 +214,11 @@ function DarkToggleBtn({ dark, T, onToggle }) {
     if (!wasMoved) onToggle();
   };
 
-  // If user has dragged it, use absolute coords; otherwise anchor to top-right
-  // via `right` so it stays in the right place when the canvas resizes.
+  // If user has dragged it, use absolute coords; otherwise default to the
+  // bottom-right corner just above the tab bar — keeps it clear of the
+  // BrandHeader (which sits at the very top on every screen).
   const positional = (cx == null || cy == null)
-    ? { right: 14, top: 16 }
+    ? { right: 14, bottom: 88 }
     : { left: cx, top: cy };
 
   return (
