@@ -12,7 +12,7 @@
 <style>
   html, body {
     margin: 0; padding: 0; background: #0c0e12;
-    height: 100%; overflow: hidden;
+    height: 100dvh; min-height: 100dvh; overflow: hidden;
     font-family: -apple-system, "SF Pro Text", system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
@@ -25,13 +25,23 @@
      to the available space (no scrolling outside the canvas). */
   #stage {
     position: relative;
-    width: 100%; height: 100%;
+    width: 100vw; height: 100dvh;
     overflow: hidden;
   }
 
-  /* Phones (≤ 640px): fill the whole screen, no chrome. */
+  /* Phones (≤ 640px): fill the whole screen edge-to-edge, no padding.
+     Use dvh so the canvas tracks the visible viewport when the browser's
+     URL bar shows/hides. */
   @media (max-width: 640px) {
-    body { background: #050608; }
+    body {
+      background: #0c0e12;
+      padding: 0; margin: 0;
+    }
+    #stage {
+      width: 100vw; height: 100dvh;
+      border-radius: 0;
+      box-shadow: none;
+    }
   }
 
   /* Tablets + desktop: phone-shaped canvas centered. Width and height both

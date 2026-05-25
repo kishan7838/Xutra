@@ -489,7 +489,6 @@ function App() {
           background: T.bg,
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden',
-          paddingTop: 'env(safe-area-inset-top, 0px)',
         }}>
               {/* ── Dark / Light mode toggle (draggable) ── */}
             <DarkToggleBtn dark={t.dark} T={T} onToggle={() => setTweak('dark', !t.dark)} />

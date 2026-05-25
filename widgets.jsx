@@ -622,7 +622,11 @@ function TabBar({ active, onChange, T }) {
   return (
     <div style={{
       position: 'absolute', left: 0, right: 0, bottom: 0,
-      paddingBottom: 28, paddingTop: 8,
+      // Padding: 10px content gap + safe-area inset (iOS home indicator).
+      // Falls back to 12px on devices without a safe area so we don't waste
+      // 28px of dead space at the bottom on regular phones / desktops.
+      paddingBottom: 'max(12px, env(safe-area-inset-bottom, 12px))',
+      paddingTop: 8,
       background: T.bg,
       borderTop: `0.5px solid ${T.borderS}`,
       display: 'flex',
