@@ -32,22 +32,22 @@ function BrandHeader({ title, T, trailing, showWordmark = false }) {
 }
 
 function XustaMarkV2({ color, size = 22, dark = true }) {
+  // Pre-tinted brand logo (peach/pink). Displayed directly as <img> so it
+  // renders identically across browsers and screenshot tools (mask-image
+  // approaches were fragile here).
   return (
-    <div style={{
-      width: size, height: size, flexShrink: 0,
-      display: 'inline-block', verticalAlign: 'middle',
-      background: color,
-      maskImage: 'url(uploads/logo.png)',
-      maskSize: 'contain',
-      maskRepeat: 'no-repeat',
-      maskPosition: 'center',
-      maskMode: 'luminance',
-      WebkitMaskImage: 'url(uploads/logo.png)',
-      WebkitMaskSize: 'contain',
-      WebkitMaskRepeat: 'no-repeat',
-      WebkitMaskPosition: 'center',
-      WebkitMaskMode: 'luminance',
-    }} />
+    <img
+      src="uploads/logo-brand.png"
+      width={size}
+      height={size}
+      alt="Xusta"
+      style={{
+        flexShrink: 0,
+        display: 'inline-block',
+        verticalAlign: 'middle',
+        objectFit: 'contain',
+      }}
+    />
   );
 }
 

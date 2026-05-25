@@ -776,22 +776,20 @@ function RowKV({ label, value, sub, subColor, strong, T }) {
 }
 
 function XustaMark({ T, size = 22 }) {
+  // Pre-tinted brand logo — see XustaMarkV2 in screens-v2.jsx for the reasoning.
   return (
-    <div style={{
-      width: size, height: size, flexShrink: 0,
-      display: 'inline-block',
-      background: T.brand,
-      maskImage: 'url(uploads/logo.png)',
-      maskSize: 'contain',
-      maskRepeat: 'no-repeat',
-      maskPosition: 'center',
-      maskMode: 'luminance',
-      WebkitMaskImage: 'url(uploads/logo.png)',
-      WebkitMaskSize: 'contain',
-      WebkitMaskRepeat: 'no-repeat',
-      WebkitMaskPosition: 'center',
-      WebkitMaskMode: 'luminance',
-    }} />
+    <img
+      src="uploads/logo-brand.png"
+      width={size}
+      height={size}
+      alt="Xusta"
+      style={{
+        flexShrink: 0,
+        display: 'inline-block',
+        verticalAlign: 'middle',
+        objectFit: 'contain',
+      }}
+    />
   );
 }
 

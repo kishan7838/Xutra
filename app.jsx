@@ -325,7 +325,19 @@ function App() {
   const stockLive = useMemoA(() => {
     if (!activeStock) return null;
     const all = [...positions, ...holdings, ...Object.values(watchlists).flat()];
-    return all.find(p => p.symbol === activeStock.symbol) || activeStock;
+    // Match on symbol + exchange + instrument type so an equity (NSE EQ) isn't
+    // confused with an option/future on the same symbol (NFO OPT/FUT). Falls
+    // back to a symbol-only match, then the source stock.
+    const sym  = activeStock.symbol;
+    const exch = activeStock.exch;
+    const typ  = activeStock.type ?? 'EQ';
+    return (
+      all.find(p => p.symbol === sym && p.exch === exch && (p.type ?? 'EQ') === typ)
+      || all.find(p => p.symbol === sym && p.exch === exch)
+      || all.find(p => p.symbol === sym && (p.type ?? 'EQ') === 'EQ')
+      || all.find(p => p.symbol === sym)
+      || activeStock
+    );
   }, [activeStock, positions, holdings, watchlists]);
 
   const openDetail = (stock, initialTab = 'analysis') => {
@@ -516,7 +528,11 @@ function App() {
             )}
 
             <Toast message={toast?.msg} type={toast?.type} T={T} onClose={() => setToast(null)} />
-            <TabBar active={tab} onChange={handleTab} T={T} />
+            {/* Bottom nav hidden on stack-pushed screens (Stock Detail, Order Entry)
+                so the back affordance is the primary navigation there. */}
+            {screen !== 'detail' && screen !== 'order' && (
+              <TabBar active={tab} onChange={handleTab} T={T} />
+            )}
           </div>
 
       <TweaksPanel title="Tweaks">
