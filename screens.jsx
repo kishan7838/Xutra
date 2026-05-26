@@ -89,8 +89,8 @@ function PositionsScreen({ positions, holdings, brokers, brokerFilter, onChangeB
         </div>
       )}
 
-      {/* Scrollable body — pad bottom to make room for the fixed footer + tab bar */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '14px 0 150px' }}>
+      {/* Scrollable body */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '14px 0 20px' }}>
         {seg === 'holdings' && (
           <HoldingsView holdings={holdings} T={T}
                         onSelectStock={onSelectStock}
@@ -104,12 +104,11 @@ function PositionsScreen({ positions, holdings, brokers, brokerFilter, onChangeB
         )}
       </div>
 
-      {/* Day's P&L — solid, fixed band ABOVE the tab bar (outside scroll) */}
+      {/* Day's P&L — sits flush above the tab bar in normal flow */}
       <div style={{
-        position: 'absolute', left: 0, right: 0, bottom: 78,
+        flexShrink: 0,
         background: T.surface,
         borderTop: `0.5px solid ${T.border}`,
-        borderBottom: `0.5px solid ${T.border}`,
         padding: '12px 16px',
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         zIndex: 25,
@@ -131,6 +130,12 @@ function PositionsScreen({ positions, holdings, brokers, brokerFilter, onChangeB
           }}>{fmtPct(dayPct)}</span>
         </span>
       </div>
+
+      {/* Spacer matching the tab bar height so content isn't hidden behind it */}
+      <div style={{
+        flexShrink: 0,
+        height: 'calc(max(57px, calc(env(safe-area-inset-bottom, 0px) + 51px)))',
+      }} />
     </div>
   );
 }

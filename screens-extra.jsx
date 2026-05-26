@@ -331,7 +331,8 @@ function StockDetailScreen({ stock, T, onBack, onOpenOrder, onOpenChain, initial
       {/* Header */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 12,
-        padding: '54px 14px 10px'
+        paddingTop: 'max(54px, calc(env(safe-area-inset-top, 0px) + 10px))',
+        paddingRight: '14px', paddingBottom: '10px', paddingLeft: '14px',
       }}>
         <button onClick={onBack} style={{
           width: 32, height: 32, borderRadius: '50%',
@@ -486,7 +487,8 @@ function StockDetailScreen({ stock, T, onBack, onOpenOrder, onOpenChain, initial
 
       {/* Bottom action bar */}
       <div style={{
-        position: 'absolute', left: 0, right: 0, bottom: 80,
+        position: 'absolute', left: 0, right: 0,
+        bottom: 'max(0px, env(safe-area-inset-bottom, 0px))',
         padding: '10px 14px',
         background: T.dark ?
         'linear-gradient(to top, oklch(0.17 0.012 240) 70%, oklch(0.17 0.012 240 / 0))' :

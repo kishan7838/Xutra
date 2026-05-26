@@ -218,7 +218,7 @@ function DarkToggleBtn({ dark, T, onToggle }) {
   // bottom-right corner just above the tab bar — keeps it clear of the
   // BrandHeader (which sits at the very top on every screen).
   const positional = (cx == null || cy == null)
-    ? { right: 14, bottom: 88 }
+    ? { right: 14, bottom: 'calc(max(88px, calc(env(safe-area-inset-bottom, 0px) + 72px)))' }
     : { left: cx, top: cy };
 
   return (

@@ -8,7 +8,10 @@ const { useState: useV, useEffect: useEV, useRef: useRV, useMemo: useMV } = Reac
 function BrandHeader({ title, T, trailing, showWordmark = false }) {
   return (
     <div style={{
-      padding: '16px 20px 14px',
+      paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)',
+      paddingRight: '20px',
+      paddingBottom: '14px',
+      paddingLeft: '20px',
       display: 'flex', alignItems: 'center', gap: 8,
     }}>
       <XustaMarkV2 color={T.brand} size={36} dark={T.dark} />
@@ -791,7 +794,8 @@ function OrderEntryScreenV2({ stock, defaultSide = 'buy', defaultQty = null, T, 
       {/* Header */}
       <div style={{
         display: 'flex', alignItems: 'flex-start', gap: 12,
-        padding: '56px 16px 18px',
+        paddingTop: 'max(56px, calc(env(safe-area-inset-top, 0px) + 12px))',
+        paddingRight: '16px', paddingBottom: '18px', paddingLeft: '16px',
       }}>
         <button onClick={onBack} style={{
           width: 30, height: 30, border: 0, background: 'transparent',
@@ -836,7 +840,7 @@ function OrderEntryScreenV2({ stock, defaultSide = 'buy', defaultQty = null, T, 
       </div>
 
       {/* Body scroll */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 200px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 220px' }}>
         {/* BUY/SELL toggle */}
         <div style={{
           display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4,
@@ -934,7 +938,8 @@ function OrderEntryScreenV2({ stock, defaultSide = 'buy', defaultQty = null, T, 
 
       {/* Fixed footer: margin + drag-to-buy/sell */}
       <div style={{
-        position: 'absolute', left: 0, right: 0, bottom: 76,
+        position: 'absolute', left: 0, right: 0,
+        bottom: 'max(0px, env(safe-area-inset-bottom, 0px))',
         padding: '14px 16px 14px',
         background: T.bg,
         borderTop: `0.5px solid ${T.border}`,

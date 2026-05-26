@@ -576,7 +576,9 @@ function Toast({ message, type = 'info', T, onClose }) {
   const c = type === 'buy' ? T.up : type === 'sell' ? T.down : T.info;
   return (
     <div style={{
-      position: 'absolute', left: 16, right: 16, bottom: 100, zIndex: 100,
+      position: 'absolute', left: 16, right: 16,
+      bottom: 'calc(max(68px, calc(env(safe-area-inset-bottom, 0px) + 60px)))',
+      zIndex: 100,
       background: T.surface, borderLeft: `3px solid ${c}`,
       borderRadius: T.radius.md, padding: '12px 14px',
       boxShadow: '0 12px 32px rgba(0,0,0,0.4)',
